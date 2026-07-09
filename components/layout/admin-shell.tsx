@@ -8,7 +8,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white px-5 py-6 lg:block">
         <Link className="block" href="/">
           <p className="text-sm font-medium text-teal-700">LLP</p>
-          <p className="mt-1 text-lg font-semibold text-slate-950">Admin CMS</p>
+          <p className="mt-1 text-lg font-semibold text-slate-950">Admin LLP</p>
         </Link>
 
         <nav className="mt-8 space-y-1">
