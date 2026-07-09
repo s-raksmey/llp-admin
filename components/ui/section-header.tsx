@@ -10,12 +10,12 @@ export function SectionHeader({
   description,
 }: Readonly<SectionHeaderProps>) {
   return (
-    <section>
-      <p className="text-sm font-medium text-teal-700">{eyebrow}</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950">
+    <section className="admin-fade-up">
+      <p className="text-sm font-semibold text-blue-600">{eyebrow}</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-normal text-foreground">
         {title}
       </h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
         {description}
       </p>
     </section>

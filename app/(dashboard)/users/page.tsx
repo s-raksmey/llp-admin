@@ -8,7 +8,7 @@ export default function UsersPage() {
         title="Users"
         description="Manage administrators, editors, roles, and account status."
       />
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500">
+      <div className="admin-panel admin-scale-in border-dashed p-8 text-sm text-[var(--muted)]">
         User management and role assignment controls will live here.
       </div>
     </div>

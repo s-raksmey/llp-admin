@@ -8,7 +8,7 @@ export default function CoursesPage() {
         title="Courses"
         description="Create, edit, archive, and manage SEO details for courses."
       />
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500">
+      <div className="admin-panel admin-scale-in border-dashed p-8 text-sm text-[var(--muted)]">
         Course table and editor actions will live here.
       </div>
     </div>

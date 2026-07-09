@@ -8,7 +8,7 @@ export default function MediaPage() {
         title="Media Library"
         description="Upload, preview, search, delete, and copy URLs for teaching files."
       />
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500">
+      <div className="admin-panel admin-scale-in border-dashed p-8 text-sm text-[var(--muted)]">
         Media browser and upload queue will live here.
       </div>
     </div>

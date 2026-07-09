@@ -1,16 +1,15 @@
 import { SectionHeader } from "@/components/ui/section-header";
+import { LectureAdminConsole } from "@/features/lectures/components/lecture-admin-console";
 
 export default function LecturesPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <SectionHeader
-        eyebrow="Content"
-        title="Lectures"
-        description="Draft, publish, duplicate, and schedule rich lecture content."
+        eyebrow="Content Operations"
+        title="Lecture Console"
+        description="Draft, publish, duplicate, and maintain rich lecture content before it flows through the GraphQL API to the public website."
       />
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500">
-        Lecture list, filters, and rich text editor entry points will live here.
-      </div>
+      <LectureAdminConsole />
     </div>
   );
 }
