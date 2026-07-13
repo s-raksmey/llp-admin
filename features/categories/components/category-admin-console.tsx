@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import type { Category, CategoryFormInput, CategoryScope } from "@/features/categories/types";
-import { defaultLessonOutline, parseOutline, serializeOutline } from "@/lib/outline";
+import { defaultLessonOutline, serializeOutline } from "@/lib/outline";
 
 const emptyForm: CategoryFormInput = {
   name: "",
@@ -23,6 +23,16 @@ type CategoryAdminConsoleProps = {
 };
 
 type CreateCategoryResponse = {
+  category?: Category;
+  error?: string;
+};
+
+type UpdateCategoryResponse = {
+  category?: Category;
+  error?: string;
+};
+
+type UpdateCategoryStatusResponse = {
   category?: Category;
   error?: string;
 };
@@ -79,7 +89,6 @@ export function CategoryAdminConsole({ initialCategories }: CategoryAdminConsole
   const validCategories = categories.filter(isCategory);
   const archivedCount = validCategories.length - activeCount;
   const editingCategory = validCategories.find((category) => category.id === editingId);
-  const outlinePreview = useMemo(() => parseOutline(form.outline), [form.outline]);
 
   function updateForm(field: keyof CategoryFormInput, value: string) {
     setForm((current) => ({
@@ -122,18 +131,31 @@ export function CategoryAdminConsole({ initialCategories }: CategoryAdminConsole
 
     try {
       if (editingId) {
+        const response = await fetch(`/api/categories/${editingId}`, {
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            name: form.name,
+            slug: normalizedSlug,
+            description: form.description,
+            scope: form.scope,
+          }),
+        });
+        const result = (await response.json()) as UpdateCategoryResponse;
+        const updatedCategory = result.category;
+
+        if (!response.ok || !updatedCategory) {
+          throw new Error(result.error ?? "Failed to update category.");
+        }
+
         setCategories((current) =>
-          current.map((category) =>
-            category.id === editingId
-              ? {
-                  ...category,
-                  ...form,
-                  slug: normalizedSlug,
-                  tableOfContents: outlinePreview,
-                  updatedAt: "Just now",
-                }
-              : category,
-          ),
+          current
+            .filter(isCategory)
+            .map((category) =>
+              category.id === editingId ? updatedCategory : category,
+            ),
         );
         closeModal();
         return;
@@ -186,18 +208,39 @@ export function CategoryAdminConsole({ initialCategories }: CategoryAdminConsole
     setIsModalOpen(true);
   }
 
-  function toggleArchive(categoryId: string) {
-    setCategories((current) =>
-      current.map((category) =>
-        category.id === categoryId
-          ? {
-              ...category,
-              status: category.status === "ACTIVE" ? "ARCHIVED" : "ACTIVE",
-              updatedAt: "Just now",
-            }
-          : category,
-      ),
-    );
+  async function toggleArchive(categoryId: string) {
+    const category = validCategories.find((item) => item.id === categoryId);
+
+    if (!category) {
+      return;
+    }
+
+    const nextStatus = category.status === "ACTIVE" ? "ARCHIVED" : "ACTIVE";
+
+    try {
+      const response = await fetch(`/api/categories/${categoryId}/status`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const result = (await response.json()) as UpdateCategoryStatusResponse;
+      const updatedCategory = result.category;
+
+      if (!response.ok || !updatedCategory) {
+        window.alert(result.error ?? "Failed to update category status.");
+        return;
+      }
+
+      setCategories((current) =>
+        current
+          .filter(isCategory)
+          .map((item) => (item.id === categoryId ? updatedCategory : item)),
+      );
+    } catch {
+      window.alert("Failed to update category status.");
+    }
   }
 
   async function deleteCategory(categoryId: string) {
@@ -264,8 +307,8 @@ export function CategoryAdminConsole({ initialCategories }: CategoryAdminConsole
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+          <div>
+            <table className="w-full table-fixed border-collapse text-left text-sm">
               <thead className="border-b border-[var(--border)] bg-[var(--panel-strong)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
                 <tr>
                   <th className="px-5 py-4">Category</th>
@@ -513,6 +556,10 @@ function statusClassName(status: Category["status"]) {
 
   return "border-slate-200 bg-slate-100 text-slate-600";
 }
+
+
+
+
 
 
 

@@ -24,6 +24,20 @@ html[data-theme="dark"] {
   --shadow: none;
 }
 
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #07080a;
+    --foreground: #f4f4f5;
+    --muted: #a2a4ad;
+    --panel: #15161a;
+    --panel-strong: #1c1e24;
+    --border: #2a2c33;
+    --primary: #5aa2ff;
+    --primary-foreground: #06101f;
+    --shadow: none;
+  }
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -401,3 +415,4 @@ html[data-theme="dark"] .theme-icon-sun {
     transition-duration: 1ms !important;
   }
 }
+

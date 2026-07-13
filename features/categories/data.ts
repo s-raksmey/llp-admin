@@ -1,5 +1,4 @@
 import { graphqlRequest } from "@/lib/graphql-client";
-import type { OutlineItem } from "@/lib/outline";
 import type { Category } from "./types";
 
 type ApiCategory = {
@@ -10,13 +9,7 @@ type ApiCategory = {
   scope: Category["scope"];
   status: Category["status"];
   updatedAt: string | null;
-  outlineItems?: Array<{
-    id: string | number;
-    parentId: string | number | null;
-    title: string;
-    sortOrder: number;
-  }>;
-  lectures?: Array<{ id: string | number }>;
+  lectureCount?: number | null;
 };
 
 type CategoriesQuery = {
@@ -27,11 +20,28 @@ type CreateCategoryMutation = {
   createCategory?: ApiCategory | null;
 };
 
+type UpdateCategoryMutation = {
+  updateCategory?: ApiCategory | null;
+};
+
+type UpdateCategoryStatusMutation = {
+  updateCategoryStatus?: ApiCategory | null;
+};
+
 export type CreateCategoryPayload = {
   name: string;
   slug: string;
   description: string;
   scope: Category["scope"];
+};
+
+export type UpdateCategoryPayload = CreateCategoryPayload & {
+  id: string;
+};
+
+export type UpdateCategoryStatusPayload = {
+  id: string;
+  status: Category["status"];
 };
 
 type DeleteCategoryMutation = {
@@ -42,7 +52,7 @@ type DeleteCategoryMutation = {
   };
 };
 
-const categoryFields = `
+const categoryRowFields = `
   id
   name
   slug
@@ -50,15 +60,7 @@ const categoryFields = `
   scope
   status
   updatedAt
-  outlineItems {
-    id
-    parentId
-    title
-    sortOrder
-  }
-  lectures {
-    id
-  }
+  lectureCount
 `;
 
 export const adminCategories: Category[] = [];
@@ -67,7 +69,7 @@ export async function getAdminCategories(): Promise<Category[]> {
   const data = await graphqlRequest<CategoriesQuery>(`
     query AdminCategories {
       categories {
-        ${categoryFields}
+        ${categoryRowFields}
       }
     }
   `);
@@ -82,7 +84,7 @@ export async function createAdminCategory(
     `
       mutation CreateCategory($input: CreateCategoryInput!) {
         createCategory(input: $input) {
-          ${categoryFields}
+          ${categoryRowFields}
         }
       }
     `,
@@ -94,6 +96,65 @@ export async function createAdminCategory(
   }
 
   return toAdminCategory(data.createCategory);
+}
+
+export async function updateAdminCategory(
+  input: UpdateCategoryPayload,
+): Promise<Category> {
+  const data = await graphqlRequest<UpdateCategoryMutation>(
+    `
+      mutation UpdateCategory($input: UpdateCategoryInput!) {
+        updateCategory(input: $input) {
+          ${categoryRowFields}
+        }
+      }
+    `,
+    { input },
+  );
+
+  if (!isApiCategory(data.updateCategory)) {
+    throw new Error("GraphQL did not return the updated category.");
+  }
+
+  return toAdminCategory(data.updateCategory);
+}
+
+export async function updateAdminCategoryStatus(
+  input: UpdateCategoryStatusPayload,
+): Promise<Category> {
+  const data = await graphqlRequest<UpdateCategoryStatusMutation>(
+    `
+      mutation UpdateCategoryStatus($input: UpdateCategoryStatusInput!) {
+        updateCategoryStatus(input: $input) {
+          ${categoryRowFields}
+        }
+      }
+    `,
+    { input },
+  );
+
+  if (!isApiCategory(data.updateCategoryStatus)) {
+    throw new Error("GraphQL did not return the updated category status.");
+  }
+
+  return toAdminCategory(data.updateCategoryStatus);
+}
+
+export async function deleteAdminCategory(id: string) {
+  const data = await graphqlRequest<DeleteCategoryMutation>(
+    `
+      mutation DeleteCategory($id: ID!) {
+        deleteCategory(id: $id) {
+          id
+          success
+          message
+        }
+      }
+    `,
+    { id },
+  );
+
+  return data.deleteCategory;
 }
 
 function isApiCategory(category: ApiCategory | null | undefined): category is ApiCategory {
@@ -108,9 +169,6 @@ function isApiCategory(category: ApiCategory | null | undefined): category is Ap
 }
 
 function toAdminCategory(category: ApiCategory): Category {
-  const outlineItems = category.outlineItems ?? [];
-  const lectures = category.lectures ?? [];
-
   return {
     id: String(category.id),
     name: category.name,
@@ -118,25 +176,10 @@ function toAdminCategory(category: ApiCategory): Category {
     description: category.description ?? "",
     scope: category.scope,
     status: category.status,
-    itemCount: outlineItems.length + lectures.length,
+    itemCount: category.lectureCount ?? 0,
     updatedAt: formatDate(category.updatedAt),
-    tableOfContents: toOutline(outlineItems),
+    tableOfContents: [],
   };
-}
-
-function toOutline(
-  items: NonNullable<ApiCategory["outlineItems"]>,
-): OutlineItem[] {
-  const sortedItems = [...items].sort((first, second) => first.sortOrder - second.sortOrder);
-
-  return sortedItems
-    .filter((item) => !item.parentId)
-    .map((item) => ({
-      title: item.title,
-      children: sortedItems
-        .filter((child) => String(child.parentId) === String(item.id))
-        .map((child) => child.title),
-    }));
 }
 
 function formatDate(value: string | null) {
@@ -155,21 +198,4 @@ function formatDate(value: string | null) {
     day: "numeric",
     year: "numeric",
   }).format(date);
-}
-
-export async function deleteAdminCategory(id: string) {
-  const data = await graphqlRequest<DeleteCategoryMutation>(
-    `
-      mutation DeleteCategory($id: ID!) {
-        deleteCategory(id: $id) {
-          id
-          success
-          message
-        }
-      }
-    `,
-    { id },
-  );
-
-  return data.deleteCategory;
 }

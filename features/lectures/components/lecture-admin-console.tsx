@@ -115,8 +115,8 @@ export function LectureAdminConsole({ initialLectures }: LectureAdminConsoleProp
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+          <div>
+            <table className="w-full table-fixed border-collapse text-left text-sm">
               <thead className="border-b border-[var(--border)] bg-[var(--panel-strong)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
                 <tr>
                   <th className="px-5 py-4">Index Key</th>
@@ -296,6 +296,7 @@ function MetricCard({
     </article>
   );
 }
+
 
 
 

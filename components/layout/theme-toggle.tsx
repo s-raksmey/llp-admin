@@ -2,14 +2,20 @@
 
 type Theme = "light" | "dark";
 
+function saveTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
+  localStorage.setItem("theme", theme);
+  document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
 export function ThemeToggle() {
   function toggleTheme() {
     const currentTheme: Theme =
       document.documentElement.dataset.theme === "dark" ? "dark" : "light";
     const nextTheme: Theme = currentTheme === "light" ? "dark" : "light";
 
-    document.documentElement.dataset.theme = nextTheme;
-    localStorage.setItem("theme", nextTheme);
+    saveTheme(nextTheme);
   }
 
   return (

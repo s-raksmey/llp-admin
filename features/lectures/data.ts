@@ -12,16 +12,16 @@ export type AdminLecture = Lecture & {
 
 type ApiLecture = {
   id: string;
-  categoryId: string | null;
+  categoryId?: string | null;
   category: { name: string } | null;
   title: string;
   slug: string;
-  description: string | null;
+  description?: string | null;
   status: Lecture["status"];
-  readingTime: string | null;
-  publishedAt: string | null;
+  readingTime?: string | null;
+  publishedAt?: string | null;
   updatedAt: string | null;
-  outlineItems: Array<{
+  outlineItems?: Array<{
     id: string;
     parentId: string | null;
     title: string;
@@ -44,23 +44,14 @@ export async function getAdminLectures(): Promise<AdminLecture[]> {
     query AdminLectures {
       lectures {
         id
-        categoryId
+        id
         category {
           name
         }
         title
         slug
-        description
         status
-        readingTime
-        publishedAt
         updatedAt
-        outlineItems {
-          id
-          parentId
-          title
-          sortOrder
-        }
       }
     }
   `);
@@ -117,7 +108,7 @@ function toAdminLecture(lecture: ApiLecture): AdminLecture {
   };
 }
 
-function toOutline(items: ApiLecture["outlineItems"]): OutlineItem[] {
+function toOutline(items: NonNullable<ApiLecture["outlineItems"]> = []): OutlineItem[] {
   const sortedItems = [...items].sort((first, second) => first.sortOrder - second.sortOrder);
 
   return sortedItems
@@ -147,4 +138,6 @@ function formatDate(value: string | null) {
     year: "numeric",
   }).format(date);
 }
+
+
 
