@@ -1,6 +1,7 @@
 export const mainNavigation = [
   { href: "/", label: "Dashboard" },
   { href: "/courses", label: "Courses" },
+  { href: "/categories", label: "Categories" },
   { href: "/lectures", label: "Lectures" },
   { href: "/media", label: "Media Library" },
   { href: "/users", label: "Users" },

@@ -1,10 +1,12 @@
 import type { Lecture } from "./types";
+import type { OutlineItem } from "@/lib/outline";
 
 export type AdminLecture = Lecture & {
   category: string;
   description: string;
   readingTime: string;
   updatedAt: string;
+  tableOfContents: OutlineItem[];
 };
 
 export const adminLectures: AdminLecture[] = [
@@ -20,6 +22,14 @@ export const adminLectures: AdminLecture[] = [
       "Core educational breakdown handling screen whitespace, hierarchy, and content flow.",
     readingTime: "7 minutes",
     updatedAt: "Today",
+    tableOfContents: [
+      { title: "Data, Features, and Targets" },
+      { title: "Preprocessing and Feature Engineering" },
+      {
+        title: "Losses",
+        children: ["Mean Squared Error", "Binary Cross-Entropy"],
+      },
+    ],
   },
   {
     id: "MOD_2.1",
@@ -32,6 +42,11 @@ export const adminLectures: AdminLecture[] = [
       "Draft module for local cache strategy, GraphQL mutations, and publish state.",
     readingTime: "11 minutes",
     updatedAt: "Yesterday",
+    tableOfContents: [
+      { title: "Server State vs Local State" },
+      { title: "Apollo Cache Updates" },
+      { title: "Optimistic Mutations" },
+    ],
   },
   {
     id: "MOD_3.1",
@@ -45,6 +60,11 @@ export const adminLectures: AdminLecture[] = [
       "Operational notes for image, PDF, video, and YouTube resources inside lectures.",
     readingTime: "9 minutes",
     updatedAt: "2 days ago",
+    tableOfContents: [
+      { title: "Upload Validation" },
+      { title: "Attachment Rendering", children: ["PDF", "ZIP", "Video"] },
+      { title: "Copy URL Workflow" },
+    ],
   },
 ];
 

@@ -5,7 +5,7 @@ Administration dashboard for the Lecture Learning Platform.
 ## Structure
 
 - `app/(auth)` - authentication routes such as login
-- `app/(dashboard)` - protected CMS routes for dashboard, courses, lectures, media, users, and settings
+- `app/(dashboard)` - protected CMS routes for dashboard, courses, categories, lectures, media, users, and settings
 - `components` - shared layout and UI building blocks
 - `config` - navigation and app-level configuration
 - `features` - domain-specific types, data, hooks, forms, and tables
