@@ -27,6 +27,12 @@ type CreateCategoryResponse = {
   error?: string;
 };
 
+type DeleteCategoryResponse = {
+  id?: string;
+  success: boolean;
+  message: string;
+};
+
 function slugify(value: string) {
   return value
     .trim()
@@ -194,13 +200,36 @@ export function CategoryAdminConsole({ initialCategories }: CategoryAdminConsole
     );
   }
 
-  function deleteCategory(categoryId: string) {
-    setCategories((current) =>
-      current.filter((category) => category.id !== categoryId),
+  async function deleteCategory(categoryId: string) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this category?",
     );
 
-    if (editingId === categoryId) {
-      closeModal();
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: "DELETE",
+      });
+
+      const result = (await response.json()) as DeleteCategoryResponse;
+
+      if (!response.ok || !result.success) {
+        window.alert(result.message || "Failed to delete category.");
+        return;
+      }
+
+      setCategories((current) =>
+        current.filter((category) => category.id !== categoryId),
+      );
+
+      if (editingId === categoryId) {
+        closeModal();
+      }
+    } catch {
+      window.alert("Failed to delete category.");
     }
   }
 

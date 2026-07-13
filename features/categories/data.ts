@@ -34,6 +34,14 @@ export type CreateCategoryPayload = {
   scope: Category["scope"];
 };
 
+type DeleteCategoryMutation = {
+  deleteCategory: {
+    id: string;
+    success: boolean;
+    message: string;
+  };
+};
+
 const categoryFields = `
   id
   name
@@ -147,4 +155,21 @@ function formatDate(value: string | null) {
     day: "numeric",
     year: "numeric",
   }).format(date);
+}
+
+export async function deleteAdminCategory(id: string) {
+  const data = await graphqlRequest<DeleteCategoryMutation>(
+    `
+      mutation DeleteCategory($id: ID!) {
+        deleteCategory(id: $id) {
+          id
+          success
+          message
+        }
+      }
+    `,
+    { id },
+  );
+
+  return data.deleteCategory;
 }
