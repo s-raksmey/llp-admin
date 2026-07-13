@@ -1,8 +1,5 @@
 import { notFound } from "next/navigation";
-import {
-  adminLectures,
-  findAdminLecture,
-} from "@/features/lectures/data";
+import { findAdminLecture } from "@/features/lectures/data";
 import { LectureEditorWorkspace } from "@/features/lectures/components/lecture-editor-workspace";
 
 type LectureEditorPageProps = {
@@ -11,17 +8,11 @@ type LectureEditorPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return adminLectures.map((lecture) => ({
-    lectureId: lecture.id,
-  }));
-}
-
 export default async function LectureEditorPage({
   params,
 }: Readonly<LectureEditorPageProps>) {
   const { lectureId } = await params;
-  const lecture = findAdminLecture(lectureId);
+  const lecture = await findAdminLecture(lectureId);
 
   if (!lecture) {
     notFound();

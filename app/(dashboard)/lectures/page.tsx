@@ -1,7 +1,10 @@
 import { SectionHeader } from "@/components/ui/section-header";
 import { LectureAdminConsole } from "@/features/lectures/components/lecture-admin-console";
+import { getAdminLectures } from "@/features/lectures/data";
 
-export default function LecturesPage() {
+export default async function LecturesPage() {
+  const lectures = await getAdminLectures();
+
   return (
     <div className="space-y-8">
       <SectionHeader
@@ -9,7 +12,7 @@ export default function LecturesPage() {
         title="Lecture Console"
         description="Draft, publish, duplicate, and maintain rich lecture content before it flows through the GraphQL API to the public website."
       />
-      <LectureAdminConsole />
+      <LectureAdminConsole initialLectures={lectures} />
     </div>
   );
 }

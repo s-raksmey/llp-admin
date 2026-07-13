@@ -3,23 +3,29 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { OutlineBuilder } from "@/components/ui/outline-builder";
-import { adminLectures, type AdminLecture } from "@/features/lectures/data";
+import type { AdminLecture } from "@/features/lectures/data";
 import { defaultLessonOutline, parseOutline } from "@/lib/outline";
 
 const statusStyles = {
   DRAFT: "text-amber-600 bg-amber-50 border-amber-200",
   PUBLISHED: "text-emerald-600 bg-emerald-50 border-emerald-200",
   SCHEDULED: "text-blue-600 bg-blue-50 border-blue-200",
+  ARCHIVED: "text-slate-600 bg-slate-100 border-slate-200",
 } as const;
 
 const statusLabels = {
   DRAFT: "Draft",
   PUBLISHED: "Published",
   SCHEDULED: "Scheduled",
+  ARCHIVED: "Archived",
 } as const;
 
-export function LectureAdminConsole() {
-  const [lectures, setLectures] = useState<AdminLecture[]>(adminLectures);
+export type LectureAdminConsoleProps = {
+  initialLectures: AdminLecture[];
+};
+
+export function LectureAdminConsole({ initialLectures }: LectureAdminConsoleProps) {
+  const [lectures, setLectures] = useState<AdminLecture[]>(initialLectures);
   const [query, setQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [draftOutline, setDraftOutline] = useState(defaultLessonOutline);
@@ -71,7 +77,7 @@ export function LectureAdminConsole() {
   }
 
   return (
-    <div className="admin-fade-up space-y-8">
+    <div className="space-y-8">
       <section className="admin-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total Courses" value="3" />
         <MetricCard label="Total Lectures" value={String(lectures.length)} />
@@ -133,7 +139,7 @@ export function LectureAdminConsole() {
                     <td className="px-5 py-4">
                       <Link
                         className="admin-interactive inline-block text-left font-semibold text-foreground hover:text-blue-600"
-                        href={`/lectures/${encodeURIComponent(lecture.id)}`}
+                        href={`/lectures/${encodeURIComponent(lecture.slug)}`}
                       >
                         {lecture.title}
                       </Link>
@@ -157,7 +163,7 @@ export function LectureAdminConsole() {
                       <div className="inline-flex items-center gap-3">
                         <Link
                           className="admin-interactive inline-block font-bold text-blue-600 hover:text-blue-700"
-                          href={`/lectures/${encodeURIComponent(lecture.id)}`}
+                          href={`/lectures/${encodeURIComponent(lecture.slug)}`}
                         >
                           Configure
                         </Link>
@@ -179,15 +185,15 @@ export function LectureAdminConsole() {
       </section>
 
       {isCreating ? (
-        <div className="admin-fade-up fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
           <form
             action={createDraft}
-            className="admin-panel admin-scale-in max-h-[90vh] w-full max-w-6xl space-y-6 overflow-y-auto p-6"
+            className="admin-panel admin-scale-in flex max-h-[calc(100dvh-2rem)] w-full max-w-6xl flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[var(--border)] px-6 py-5">
               <div>
                 <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                  Append New Record
+                  Append new record
                 </p>
                 <h2 className="mt-1 text-xl font-bold text-foreground">
                   Create Module
@@ -202,45 +208,49 @@ export function LectureAdminConsole() {
               </button>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                  Module title
-                  <input
-                    className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
-                    name="title"
-                    placeholder="Advanced data spaces"
-                    required
-                  />
-                </label>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
+                    Module title
+                    <input
+                      className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
+                      name="title"
+                      placeholder="Advanced data spaces"
+                      required
+                    />
+                  </label>
 
-                <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                  Category domain
-                  <select
-                    className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
-                    name="category"
-                  >
-                    <option>Core UI</option>
-                    <option>Data Engineering</option>
-                    <option>Media Library</option>
-                  </select>
-                </label>
+                  <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
+                    Category domain
+                    <select
+                      className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
+                      name="category"
+                    >
+                      <option>Core UI</option>
+                      <option>Data Engineering</option>
+                      <option>Media Library</option>
+                    </select>
+                  </label>
+                </div>
+
+                <aside className="rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
+                    Module structure
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                    Create the lesson sequence here first. Each item becomes a module
+                    section, and sub-items stay attached to the correct lesson.
+                  </p>
+                </aside>
               </div>
 
-              <aside className="rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                  Module structure
-                </p>
-                <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-                  Create the lesson sequence here first. Each item becomes a module
-                  section, and sub-items stay attached to the correct lesson.
-                </p>
-              </aside>
+              <div className="mt-5">
+                <OutlineBuilder onChange={setDraftOutline} value={draftOutline} />
+              </div>
             </div>
 
-            <OutlineBuilder onChange={setDraftOutline} value={draftOutline} />
-
-            <div className="flex justify-end gap-2">
+            <div className="flex shrink-0 justify-end gap-2 border-t border-[var(--border)] bg-[var(--panel)] px-6 py-4">
               <button
                 className="admin-interactive rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--muted)] hover:bg-[var(--panel-strong)]"
                 onClick={() => setIsCreating(false)}
@@ -252,7 +262,7 @@ export function LectureAdminConsole() {
                 className="admin-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
                 type="submit"
               >
-                Commit entry
+                Create module
               </button>
             </div>
           </form>
@@ -286,3 +296,9 @@ function MetricCard({
     </article>
   );
 }
+
+
+
+
+
+

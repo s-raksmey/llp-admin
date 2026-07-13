@@ -1,5 +1,6 @@
-import type { Lecture } from "./types";
+import { graphqlRequest } from "@/lib/graphql-client";
 import type { OutlineItem } from "@/lib/outline";
+import type { Lecture } from "./types";
 
 export type AdminLecture = Lecture & {
   category: string;
@@ -9,69 +10,141 @@ export type AdminLecture = Lecture & {
   tableOfContents: OutlineItem[];
 };
 
-export const adminLectures: AdminLecture[] = [
-  {
-    id: "MOD_1.1",
-    courseId: "visual-architecture",
-    title: "Visual Architecture and Structure",
-    slug: "visual-architecture-and-structure",
-    status: "PUBLISHED",
-    publishedAt: "2026-07-09",
-    category: "Core UI",
-    description:
-      "Core educational breakdown handling screen whitespace, hierarchy, and content flow.",
-    readingTime: "7 minutes",
-    updatedAt: "Today",
-    tableOfContents: [
-      { title: "Data, Features, and Targets" },
-      { title: "Preprocessing and Feature Engineering" },
-      {
-        title: "Losses",
-        children: ["Mean Squared Error", "Binary Cross-Entropy"],
-      },
-    ],
-  },
-  {
-    id: "MOD_2.1",
-    courseId: "data-engineering",
-    title: "Advanced State Management",
-    slug: "advanced-state-management",
-    status: "DRAFT",
-    category: "Data Engineering",
-    description:
-      "Draft module for local cache strategy, GraphQL mutations, and publish state.",
-    readingTime: "11 minutes",
-    updatedAt: "Yesterday",
-    tableOfContents: [
-      { title: "Server State vs Local State" },
-      { title: "Apollo Cache Updates" },
-      { title: "Optimistic Mutations" },
-    ],
-  },
-  {
-    id: "MOD_3.1",
-    courseId: "media-delivery",
-    title: "Media Attachments and Embeds",
-    slug: "media-attachments-and-embeds",
-    status: "SCHEDULED",
-    publishedAt: "2026-07-14",
-    category: "Media Library",
-    description:
-      "Operational notes for image, PDF, video, and YouTube resources inside lectures.",
-    readingTime: "9 minutes",
-    updatedAt: "2 days ago",
-    tableOfContents: [
-      { title: "Upload Validation" },
-      { title: "Attachment Rendering", children: ["PDF", "ZIP", "Video"] },
-      { title: "Copy URL Workflow" },
-    ],
-  },
-];
+type ApiLecture = {
+  id: string;
+  categoryId: string | null;
+  category: { name: string } | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  status: Lecture["status"];
+  readingTime: string | null;
+  publishedAt: string | null;
+  updatedAt: string | null;
+  outlineItems: Array<{
+    id: string;
+    parentId: string | null;
+    title: string;
+    sortOrder: number;
+  }>;
+};
 
-export function findAdminLecture(lectureId: string) {
-  const decodedLectureId = decodeURIComponent(lectureId);
+type LecturesQuery = {
+  lectures: ApiLecture[];
+};
 
-  return adminLectures.find(
-    (lecture) => lecture.id === decodedLectureId || lecture.slug === lectureId,
-  );
+type LectureQuery = {
+  lecture: ApiLecture | null;
+};
+
+export const adminLectures: AdminLecture[] = [];
+
+export async function getAdminLectures(): Promise<AdminLecture[]> {
+  const data = await graphqlRequest<LecturesQuery>(`
+    query AdminLectures {
+      lectures {
+        id
+        categoryId
+        category {
+          name
+        }
+        title
+        slug
+        description
+        status
+        readingTime
+        publishedAt
+        updatedAt
+        outlineItems {
+          id
+          parentId
+          title
+          sortOrder
+        }
+      }
+    }
+  `);
+
+  return data.lectures.map(toAdminLecture);
 }
+
+export async function findAdminLecture(lectureId: string) {
+  const decodedLectureId = decodeURIComponent(lectureId);
+  const data = await graphqlRequest<LectureQuery>(
+    `
+      query AdminLecture($slug: String!) {
+        lecture(slug: $slug) {
+          id
+          categoryId
+          category {
+            name
+          }
+          title
+          slug
+          description
+          status
+          readingTime
+          publishedAt
+          updatedAt
+          outlineItems {
+            id
+            parentId
+            title
+            sortOrder
+          }
+        }
+      }
+    `,
+    { slug: decodedLectureId },
+  );
+
+  return data.lecture ? toAdminLecture(data.lecture) : undefined;
+}
+
+function toAdminLecture(lecture: ApiLecture): AdminLecture {
+  return {
+    id: String(lecture.id),
+    courseId: lecture.categoryId ? String(lecture.categoryId) : "uncategorized",
+    title: lecture.title,
+    slug: lecture.slug,
+    status: lecture.status,
+    publishedAt: lecture.publishedAt ?? undefined,
+    category: lecture.category?.name ?? "Uncategorized",
+    description: lecture.description ?? "",
+    readingTime: lecture.readingTime ?? "-",
+    updatedAt: formatDate(lecture.updatedAt),
+    tableOfContents: toOutline(lecture.outlineItems),
+  };
+}
+
+function toOutline(items: ApiLecture["outlineItems"]): OutlineItem[] {
+  const sortedItems = [...items].sort((first, second) => first.sortOrder - second.sortOrder);
+
+  return sortedItems
+    .filter((item) => !item.parentId)
+    .map((item) => ({
+      title: item.title,
+      children: sortedItems
+        .filter((child) => child.parentId === item.id)
+        .map((child) => child.title),
+    }));
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+

@@ -1,4 +1,4 @@
-export type LectureStatus = "DRAFT" | "PUBLISHED" | "SCHEDULED";
+export type LectureStatus = "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED";
 
 export type Lecture = {
   id: string;
@@ -8,3 +8,4 @@ export type Lecture = {
   status: LectureStatus;
   publishedAt?: string;
 };
+
