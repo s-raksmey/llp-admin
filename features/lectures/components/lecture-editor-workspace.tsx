@@ -9,18 +9,34 @@ import type {
   AdminLecture,
   AdminLectureContent,
   AdminLectureOutlineItem,
-  LectureContentStatus,
 } from "@/features/lectures/data";
 import { LectureSectionSelector } from "@/features/lectures/components/lecture-section-selector";
+
+type LectureStatus = AdminLecture["status"];
+type EditableLectureStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 type SaveContentResponse = {
   content?: AdminLectureContent;
   error?: string;
 };
 
+type UpdateLectureStatusResponse = {
+  lecture?: {
+    id: string;
+    status: EditableLectureStatus;
+    publishedAt?: string | null;
+    updatedAt?: string | null;
+  };
+  error?: string;
+};
+
 const emptyDocument: JSONContent = {
   type: "doc",
-  content: [],
+  content: [
+    {
+      type: "paragraph",
+    },
+  ],
 };
 
 export function LectureEditorWorkspace({
@@ -37,11 +53,19 @@ export function LectureEditorWorkspace({
   const [editorJson, setEditorJson] = useState<JSONContent>(() =>
     toEditorContent(lecture.outlineItems[0]?.content?.content),
   );
+  const [lectureStatus, setLectureStatus] = useState<LectureStatus>(
+    lecture.status,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(() =>
-    lecture.outlineItems[0]?.content ? "Saved to Core" : "New section",
+    lecture.status === "PUBLISHED"
+      ? "Published"
+      : lecture.outlineItems[0]?.content
+        ? "Draft saved"
+        : "New section",
   );
 
+  const isPublished = lectureStatus === "PUBLISHED";
   const selectedSection = useMemo(
     () => outlineItems.find((item) => item.id === selectedSectionId) ?? null,
     [outlineItems, selectedSectionId],
@@ -55,6 +79,7 @@ export function LectureEditorWorkspace({
   const editor = useEditor({
     extensions: [StarterKit],
     content: selectedContent,
+    editable: !isPublished,
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -72,8 +97,12 @@ export function LectureEditorWorkspace({
       return;
     }
 
-    editor.commands.setContent(selectedContent);
+    editor.commands.setContent(selectedContent, { emitUpdate: false });
   }, [editor, selectedContent]);
+
+  useEffect(() => {
+    editor?.setEditable(!isPublished);
+  }, [editor, isPublished]);
 
   const formattedJson = JSON.stringify(editorJson, null, 2);
 
@@ -81,10 +110,17 @@ export function LectureEditorWorkspace({
     const nextSection = outlineItems.find((item) => item.id === sectionId);
     setSelectedSectionId(sectionId);
     setEditorJson(toEditorContent(nextSection?.content?.content));
-    setSaveMessage(nextSection?.content ? "Saved to Core" : "New section");
+    setSaveMessage(
+      isPublished ? "Published" : nextSection?.content ? "Draft saved" : "New section",
+    );
   }
 
-  async function saveSection(status: LectureContentStatus) {
+  async function saveSection() {
+    if (isPublished) {
+      window.alert("Unpublish this lecture before editing content.");
+      return;
+    }
+
     if (!editor || !selectedSection) {
       window.alert("Please select a lecture section first.");
       return;
@@ -103,7 +139,6 @@ export function LectureEditorWorkspace({
           lectureId: lecture.id,
           outlineItemId: selectedSection.id,
           content: editor.getJSON(),
-          status,
         }),
       });
       const result = (await response.json()) as SaveContentResponse;
@@ -119,7 +154,7 @@ export function LectureEditorWorkspace({
             : item,
         ),
       );
-      setSaveMessage(status === "PUBLISHED" ? "Published" : "Saved to Core");
+      setSaveMessage("Draft saved");
     } catch (error) {
       setSaveMessage("Save failed");
       window.alert(
@@ -129,6 +164,40 @@ export function LectureEditorWorkspace({
       setIsSaving(false);
     }
   }
+
+  async function updateLectureStatus(nextStatus: EditableLectureStatus) {
+    setIsSaving(true);
+    setSaveMessage(nextStatus === "PUBLISHED" ? "Publishing..." : "Unpublishing...");
+
+    try {
+      const response = await fetch(`/api/lectures/${lecture.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const result = (await response.json()) as UpdateLectureStatusResponse;
+
+      if (!response.ok || !result.lecture) {
+        throw new Error(result.error ?? "Failed to update lecture status.");
+      }
+
+      setLectureStatus(result.lecture.status);
+      setSaveMessage(
+        result.lecture.status === "PUBLISHED" ? "Published" : "Unpublished draft",
+      );
+    } catch (error) {
+      setSaveMessage("Status update failed");
+      window.alert(
+        error instanceof Error ? error.message : "Failed to update lecture status.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const toolbarDisabled = !editor || !selectedSection || isPublished;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -162,22 +231,36 @@ export function LectureEditorWorkspace({
             <span className="admin-saved-dot h-1.5 w-1.5 rounded-full bg-emerald-500" />
             {saveMessage}
           </span>
-          <button
-            className="admin-interactive h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSaving || !selectedSection}
-            onClick={() => saveSection("DRAFT")}
-            type="button"
-          >
-            Save Draft
-          </button>
-          <button
-            className="admin-interactive h-10 rounded-lg bg-foreground px-5 text-sm font-bold text-background hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSaving || !selectedSection}
-            onClick={() => saveSection("PUBLISHED")}
-            type="button"
-          >
-            Save & Publish
-          </button>
+
+          {isPublished ? (
+            <button
+              className="admin-interactive h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isSaving}
+              onClick={() => updateLectureStatus("DRAFT")}
+              type="button"
+            >
+              Unpublish to Edit
+            </button>
+          ) : (
+            <>
+              <button
+                className="admin-interactive h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSaving || !selectedSection}
+                onClick={saveSection}
+                type="button"
+              >
+                Save Draft
+              </button>
+              <button
+                className="admin-interactive h-10 rounded-lg bg-foreground px-5 text-sm font-bold text-background hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSaving}
+                onClick={() => updateLectureStatus("PUBLISHED")}
+                type="button"
+              >
+                Publish Lecture
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -192,26 +275,26 @@ export function LectureEditorWorkspace({
           <div className="admin-fade-up sticky top-0 z-10 flex min-h-12 flex-wrap items-center gap-1 border-b border-[var(--border)] bg-[var(--panel)] px-5 py-2">
             <ToolbarButton
               active={editor?.isActive("bold")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="B"
               onClick={() => editor?.chain().focus().toggleBold().run()}
             />
             <ToolbarButton
               active={editor?.isActive("italic")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="I"
               onClick={() => editor?.chain().focus().toggleItalic().run()}
             />
             <ToolbarButton
               active={editor?.isActive("strike")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="S"
               onClick={() => editor?.chain().focus().toggleStrike().run()}
             />
             <ToolbarDivider />
             <ToolbarButton
               active={editor?.isActive("heading", { level: 1 })}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="H1"
               onClick={() =>
                 editor?.chain().focus().toggleHeading({ level: 1 }).run()
@@ -219,7 +302,7 @@ export function LectureEditorWorkspace({
             />
             <ToolbarButton
               active={editor?.isActive("heading", { level: 2 })}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="H2"
               onClick={() =>
                 editor?.chain().focus().toggleHeading({ level: 2 }).run()
@@ -227,7 +310,7 @@ export function LectureEditorWorkspace({
             />
             <ToolbarButton
               active={editor?.isActive("heading", { level: 3 })}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="H3"
               onClick={() =>
                 editor?.chain().focus().toggleHeading({ level: 3 }).run()
@@ -236,26 +319,26 @@ export function LectureEditorWorkspace({
             <ToolbarDivider />
             <ToolbarButton
               active={editor?.isActive("orderedList")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="Ordered List"
               onClick={() => editor?.chain().focus().toggleOrderedList().run()}
             />
             <ToolbarButton
               active={editor?.isActive("bulletList")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="Bullet List"
               onClick={() => editor?.chain().focus().toggleBulletList().run()}
             />
             <ToolbarButton
               active={editor?.isActive("blockquote")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="Quote Block"
               onClick={() => editor?.chain().focus().toggleBlockquote().run()}
             />
             <ToolbarDivider />
             <ToolbarButton
               active={editor?.isActive("codeBlock")}
-              disabled={!editor || !selectedSection}
+              disabled={toolbarDisabled}
               label="<Code />"
               mono
               onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
@@ -263,6 +346,12 @@ export function LectureEditorWorkspace({
           </div>
 
           <article className="admin-fade-up mx-auto w-full max-w-4xl px-6 py-12 md:px-12 md:py-16 [animation-delay:90ms]">
+            {isPublished ? (
+              <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                This lecture is published. Unpublish it before editing content.
+              </div>
+            ) : null}
+
             {selectedSection ? (
               editor ? (
                 <EditorContent editor={editor} />
@@ -308,16 +397,18 @@ export function LectureEditorWorkspace({
             <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
               Lecture Meta Description
               <textarea
-                className="min-h-20 resize-none rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] p-3 text-sm font-medium normal-case leading-6 tracking-normal text-foreground outline-none focus:border-blue-500"
+                className="min-h-20 resize-none rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] p-3 text-sm font-medium normal-case leading-6 tracking-normal text-foreground outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                 defaultValue={lecture.description}
+                disabled={isPublished}
               />
             </label>
 
             <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
               Estimated Reading Metric Length
               <input
-                className="h-10 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
+                className="h-10 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                 defaultValue={lecture.readingTime}
+                disabled={isPublished}
               />
             </label>
           </section>
@@ -374,4 +465,5 @@ function ToolbarButton({
 function ToolbarDivider() {
   return <span className="mx-1 hidden h-5 w-px bg-[var(--border)] sm:block" />;
 }
+
 

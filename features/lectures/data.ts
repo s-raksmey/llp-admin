@@ -6,16 +6,12 @@ export type LectureContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export type AdminLectureContent = {
   id: string;
-  lectureId: string;
-  outlineItemId: string;
   content: unknown;
   status: LectureContentStatus;
-  updatedAt: string | null;
 };
 
 export type AdminLectureOutlineItem = {
   id: string;
-  lectureId: string;
   parentId: string | null;
   title: string;
   sortOrder: number;
@@ -47,16 +43,12 @@ export type CreateLectureInput = {
 
 type ApiLectureContent = {
   id: string;
-  lectureId: string;
-  outlineItemId: string;
   content: unknown;
   status: LectureContentStatus;
-  updatedAt: string | null;
 };
 
 type ApiLectureOutlineItem = {
   id: string;
-  lectureId: string;
   parentId: string | null;
   title: string;
   sortOrder: number;
@@ -65,15 +57,15 @@ type ApiLectureOutlineItem = {
 
 type ApiLecture = {
   id: string;
-  categoryId?: string | null;
+  courseId?: string | null;
   category: { name: string } | null;
   title: string;
-  slug: string;
+  slug?: string | null;
   description?: string | null;
   status: Lecture["status"];
   readingTime?: string | null;
   publishedAt?: string | null;
-  updatedAt: string | null;
+  updatedAt?: string | null;
   outlineItems?: ApiLectureOutlineItem[];
 };
 
@@ -91,18 +83,41 @@ type CreateLectureMutation = {
 
 export const adminLectures: AdminLecture[] = [];
 
+const adminLectureListFields = `
+  id
+  category {
+    name
+  }
+  title
+  slug
+  status
+  updatedAt
+`;
+
+const adminLectureEditorFields = `
+  id
+  title
+  description
+  status
+  readingTime
+  outlineItems {
+    id
+    parentId
+    title
+    sortOrder
+    content {
+      id
+      content
+      status
+    }
+  }
+`;
+
 export async function getAdminLectures(): Promise<AdminLecture[]> {
   const data = await graphqlRequest<LecturesQuery>(`
     query AdminLectures {
       lectures {
-        id
-        category {
-          name
-        }
-        title
-        slug
-        status
-        updatedAt
+        ${adminLectureListFields}
       }
     }
   `);
@@ -116,33 +131,7 @@ export async function findAdminLecture(lectureId: string) {
     `
       query AdminLecture($slug: String!) {
         lecture(slug: $slug) {
-          id
-          categoryId
-          category {
-            name
-          }
-          title
-          slug
-          description
-          status
-          readingTime
-          publishedAt
-          updatedAt
-          outlineItems {
-            id
-            lectureId
-            parentId
-            title
-            sortOrder
-            content {
-              id
-              lectureId
-              outlineItemId
-              content
-              status
-              updatedAt
-            }
-          }
+          ${adminLectureEditorFields}
         }
       }
     `,
@@ -159,25 +148,7 @@ export async function createAdminLecture(
     `
       mutation CreateLecture($input: CreateLectureInput!) {
         createLecture(input: $input) {
-          id
-          categoryId
-          category {
-            name
-          }
-          title
-          slug
-          description
-          status
-          readingTime
-          publishedAt
-          updatedAt
-          outlineItems {
-            id
-            lectureId
-            parentId
-            title
-            sortOrder
-          }
+          ${adminLectureListFields}
         }
       }
     `,
@@ -192,15 +163,15 @@ function toAdminLecture(lecture: ApiLecture): AdminLecture {
 
   return {
     id: String(lecture.id),
-    courseId: lecture.categoryId ? String(lecture.categoryId) : "uncategorized",
+    courseId: lecture.courseId ? String(lecture.courseId) : "uncategorized",
     title: lecture.title,
-    slug: lecture.slug,
+    slug: lecture.slug ?? String(lecture.id),
     status: lecture.status,
     publishedAt: lecture.publishedAt ?? undefined,
     category: lecture.category?.name ?? "Uncategorized",
     description: lecture.description ?? "",
     readingTime: lecture.readingTime ?? "-",
-    updatedAt: formatDate(lecture.updatedAt),
+    updatedAt: formatDate(lecture.updatedAt ?? null),
     tableOfContents: toOutline(outlineItems),
     outlineItems,
   };
@@ -213,18 +184,14 @@ function toOutlineItems(
     .sort((first, second) => first.sortOrder - second.sortOrder)
     .map((item) => ({
       id: String(item.id),
-      lectureId: String(item.lectureId),
       parentId: item.parentId ? String(item.parentId) : null,
       title: item.title,
       sortOrder: item.sortOrder,
       content: item.content
         ? {
             id: String(item.content.id),
-            lectureId: String(item.content.lectureId),
-            outlineItemId: String(item.content.outlineItemId),
             content: item.content.content,
             status: item.content.status,
-            updatedAt: item.content.updatedAt,
           }
         : null,
     }));

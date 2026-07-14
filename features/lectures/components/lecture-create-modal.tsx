@@ -1,8 +1,8 @@
 import { OutlineBuilder } from "@/components/ui/outline-builder";
-import type { Category } from "@/features/categories/types";
+import type { LectureCategoryOption } from "@/features/categories/data";
 
 type LectureCreateModalProps = {
-  categories: Category[];
+  categories: LectureCategoryOption[];
   draftOutline: string;
   onClose: () => void;
   onCreate: (formData: FormData) => void;
@@ -104,5 +104,6 @@ export function LectureCreateModal({
     </div>
   );
 }
+
 
 

@@ -329,6 +329,8 @@ html[data-theme="dark"] .theme-icon-sun {
 }
 
 .admin-tiptap-editor {
+  min-height: 420px;
+  cursor: text;
   max-width: 760px;
   outline: none;
   animation: fade-slide-up 460ms 120ms ease both;
@@ -415,4 +417,5 @@ html[data-theme="dark"] .theme-icon-sun {
     transition-duration: 1ms !important;
   }
 }
+
 

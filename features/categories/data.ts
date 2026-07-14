@@ -16,6 +16,21 @@ type CategoriesQuery = {
   categories: ApiCategory[];
 };
 
+export type LectureCategoryOption = {
+  id: string;
+  name: string;
+};
+
+type ApiLectureCategoryOption = {
+  id: string | number;
+  name: string;
+  scope: Category["scope"];
+};
+
+type LectureCategoryOptionsQuery = {
+  categories: ApiLectureCategoryOption[];
+};
+
 type CreateCategoryMutation = {
   createCategory?: ApiCategory | null;
 };
@@ -64,6 +79,27 @@ const categoryRowFields = `
 `;
 
 export const adminCategories: Category[] = [];
+
+export async function getLectureCategoryOptions(): Promise<LectureCategoryOption[]> {
+  const data = await graphqlRequest<LectureCategoryOptionsQuery>(`
+    query LectureCategoryOptions {
+      categories(status: ACTIVE) {
+        id
+        name
+        scope
+      }
+    }
+  `);
+
+  return data.categories
+    .filter(
+      (category) => category.scope === "LECTURE" || category.scope === "BOTH",
+    )
+    .map((category) => ({
+      id: String(category.id),
+      name: category.name,
+    }));
+}
 
 export async function getAdminCategories(): Promise<Category[]> {
   const data = await graphqlRequest<CategoriesQuery>(`
@@ -199,3 +235,4 @@ function formatDate(value: string | null) {
     year: "numeric",
   }).format(date);
 }
+

@@ -4,17 +4,13 @@ type SaveContentRequest = {
   lectureId?: unknown;
   outlineItemId?: unknown;
   content?: unknown;
-  status?: unknown;
 };
 
 type SaveContentMutation = {
   saveLectureContent: {
     id: string;
-    lectureId: string;
-    outlineItemId: string;
     content: unknown;
     status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-    updatedAt: string | null;
   };
 };
 
@@ -39,11 +35,8 @@ export async function POST(request: Request) {
       mutation SaveLectureContent($input: SaveLectureContentInput!) {
         saveLectureContent(input: $input) {
           id
-          lectureId
-          outlineItemId
           content
           status
-          updatedAt
         }
       }
     `,
@@ -52,10 +45,11 @@ export async function POST(request: Request) {
         lectureId,
         outlineItemId,
         content: body.content ?? { type: "doc", content: [] },
-        status: body.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+        status: "DRAFT",
       },
     },
   );
 
   return Response.json({ content: data.saveLectureContent });
 }
+
