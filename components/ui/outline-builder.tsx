@@ -210,8 +210,8 @@ function TableOfContentsPreview({ items }: Readonly<{ items: OutlineItem[] }>) {
             </div>
             {item.children?.length ? (
               <ul className="ml-10 mt-3 space-y-3">
-                {item.children.map((child) => (
-                  <li key={child}>{child}</li>
+                {item.children.map((child, childIndex) => (
+                  <li key={`${index}-${childIndex}-${child}`}>{child}</li>
                 ))}
               </ul>
             ) : null}
@@ -221,3 +221,4 @@ function TableOfContentsPreview({ items }: Readonly<{ items: OutlineItem[] }>) {
     </aside>
   );
 }
+
