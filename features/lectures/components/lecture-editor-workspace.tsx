@@ -15,49 +15,10 @@ export function LectureEditorWorkspace({
   const initialContent = useMemo<JSONContent>(
     () => ({
       type: "doc",
-      content: [
-        {
-          type: "heading",
-          attrs: { level: 1 },
-          content: [
-            {
-              type: "text",
-              text: `Introduction to ${lecture.title}`,
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "Welcome to your first core lecture. Before diving into code or configurations, we must step back and analyze how layouts act as user guardrails.",
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "When building interfaces, whitespace is not an empty void. It is a functional component. It groups content intuitively without relying on messy borders or boxes. The cleaner the public presentation, the less cognitive friction your students experience.",
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "Every block of your formatted lecture data should satisfy exactly one goal. Avoid overcrowding a single section with disparate structural tips.",
-            },
-          ],
-        },
-      ],
+      content: [],
     }),
-    [lecture.title],
+    [],
   );
-
   const editor = useEditor({
     extensions: [StarterKit],
     content: initialContent,
@@ -261,3 +222,4 @@ function ToolbarButton({
 function ToolbarDivider() {
   return <span className="mx-1 hidden h-5 w-px bg-[var(--border)] sm:block" />;
 }
+

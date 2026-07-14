@@ -10,6 +10,20 @@ export type AdminLecture = Lecture & {
   tableOfContents: OutlineItem[];
 };
 
+export type CreateLectureOutlineItemInput = {
+  title: string;
+  children: string[];
+};
+
+export type CreateLectureInput = {
+  categoryId?: string;
+  title: string;
+  slug: string;
+  description?: string;
+  readingTime?: string;
+  outlineItems: CreateLectureOutlineItemInput[];
+};
+
 type ApiLecture = {
   id: string;
   categoryId?: string | null;
@@ -37,13 +51,16 @@ type LectureQuery = {
   lecture: ApiLecture | null;
 };
 
+type CreateLectureMutation = {
+  createLecture: ApiLecture;
+};
+
 export const adminLectures: AdminLecture[] = [];
 
 export async function getAdminLectures(): Promise<AdminLecture[]> {
   const data = await graphqlRequest<LecturesQuery>(`
     query AdminLectures {
       lectures {
-        id
         id
         category {
           name
@@ -92,6 +109,40 @@ export async function findAdminLecture(lectureId: string) {
   return data.lecture ? toAdminLecture(data.lecture) : undefined;
 }
 
+export async function createAdminLecture(
+  input: CreateLectureInput,
+): Promise<AdminLecture> {
+  const data = await graphqlRequest<CreateLectureMutation>(
+    `
+      mutation CreateLecture($input: CreateLectureInput!) {
+        createLecture(input: $input) {
+          id
+          categoryId
+          category {
+            name
+          }
+          title
+          slug
+          description
+          status
+          readingTime
+          publishedAt
+          updatedAt
+          outlineItems {
+            id
+            parentId
+            title
+            sortOrder
+          }
+        }
+      }
+    `,
+    { input },
+  );
+
+  return toAdminLecture(data.createLecture);
+}
+
 function toAdminLecture(lecture: ApiLecture): AdminLecture {
   return {
     id: String(lecture.id),
@@ -138,6 +189,7 @@ function formatDate(value: string | null) {
     year: "numeric",
   }).format(date);
 }
+
 
 
 
