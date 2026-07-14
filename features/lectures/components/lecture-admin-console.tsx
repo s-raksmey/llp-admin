@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { LectureCreateModal } from "@/features/lectures/components/lecture-create-modal";
 import { LectureMetrics } from "@/features/lectures/components/lecture-metrics";
 import { LectureTable } from "@/features/lectures/components/lecture-table";
+import type { Category } from "@/features/categories/types";
 import type { AdminLecture } from "@/features/lectures/data";
 import { filterLectures, slugify } from "@/features/lectures/utils";
 import { parseOutline } from "@/lib/outline";
@@ -11,6 +12,7 @@ import { parseOutline } from "@/lib/outline";
 const emptyLessonOutline = "";
 
 export type LectureAdminConsoleProps = {
+  initialCategories: Category[];
   initialLectures: AdminLecture[];
 };
 
@@ -20,6 +22,7 @@ type CreateLectureResponse = {
 };
 
 export function LectureAdminConsole({
+  initialCategories,
   initialLectures,
 }: Readonly<LectureAdminConsoleProps>) {
   const [lectures, setLectures] = useState<AdminLecture[]>(initialLectures);
@@ -99,6 +102,7 @@ export function LectureAdminConsole({
 
       {isCreating ? (
         <LectureCreateModal
+          categories={initialCategories}
           draftOutline={draftOutline}
           onClose={closeCreateModal}
           onCreate={createDraft}
@@ -108,3 +112,4 @@ export function LectureAdminConsole({
     </div>
   );
 }
+

@@ -2,12 +2,33 @@ import { graphqlRequest } from "@/lib/graphql-client";
 import type { OutlineItem } from "@/lib/outline";
 import type { Lecture } from "./types";
 
+export type LectureContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
+export type AdminLectureContent = {
+  id: string;
+  lectureId: string;
+  outlineItemId: string;
+  content: unknown;
+  status: LectureContentStatus;
+  updatedAt: string | null;
+};
+
+export type AdminLectureOutlineItem = {
+  id: string;
+  lectureId: string;
+  parentId: string | null;
+  title: string;
+  sortOrder: number;
+  content?: AdminLectureContent | null;
+};
+
 export type AdminLecture = Lecture & {
   category: string;
   description: string;
   readingTime: string;
   updatedAt: string;
   tableOfContents: OutlineItem[];
+  outlineItems: AdminLectureOutlineItem[];
 };
 
 export type CreateLectureOutlineItemInput = {
@@ -24,6 +45,24 @@ export type CreateLectureInput = {
   outlineItems: CreateLectureOutlineItemInput[];
 };
 
+type ApiLectureContent = {
+  id: string;
+  lectureId: string;
+  outlineItemId: string;
+  content: unknown;
+  status: LectureContentStatus;
+  updatedAt: string | null;
+};
+
+type ApiLectureOutlineItem = {
+  id: string;
+  lectureId: string;
+  parentId: string | null;
+  title: string;
+  sortOrder: number;
+  content?: ApiLectureContent | null;
+};
+
 type ApiLecture = {
   id: string;
   categoryId?: string | null;
@@ -35,12 +74,7 @@ type ApiLecture = {
   readingTime?: string | null;
   publishedAt?: string | null;
   updatedAt: string | null;
-  outlineItems?: Array<{
-    id: string;
-    parentId: string | null;
-    title: string;
-    sortOrder: number;
-  }>;
+  outlineItems?: ApiLectureOutlineItem[];
 };
 
 type LecturesQuery = {
@@ -96,9 +130,18 @@ export async function findAdminLecture(lectureId: string) {
           updatedAt
           outlineItems {
             id
+            lectureId
             parentId
             title
             sortOrder
+            content {
+              id
+              lectureId
+              outlineItemId
+              content
+              status
+              updatedAt
+            }
           }
         }
       }
@@ -130,6 +173,7 @@ export async function createAdminLecture(
           updatedAt
           outlineItems {
             id
+            lectureId
             parentId
             title
             sortOrder
@@ -144,6 +188,8 @@ export async function createAdminLecture(
 }
 
 function toAdminLecture(lecture: ApiLecture): AdminLecture {
+  const outlineItems = toOutlineItems(lecture.outlineItems);
+
   return {
     id: String(lecture.id),
     courseId: lecture.categoryId ? String(lecture.categoryId) : "uncategorized",
@@ -155,18 +201,41 @@ function toAdminLecture(lecture: ApiLecture): AdminLecture {
     description: lecture.description ?? "",
     readingTime: lecture.readingTime ?? "-",
     updatedAt: formatDate(lecture.updatedAt),
-    tableOfContents: toOutline(lecture.outlineItems),
+    tableOfContents: toOutline(outlineItems),
+    outlineItems,
   };
 }
 
-function toOutline(items: NonNullable<ApiLecture["outlineItems"]> = []): OutlineItem[] {
-  const sortedItems = [...items].sort((first, second) => first.sortOrder - second.sortOrder);
+function toOutlineItems(
+  items: NonNullable<ApiLecture["outlineItems"]> = [],
+): AdminLectureOutlineItem[] {
+  return [...items]
+    .sort((first, second) => first.sortOrder - second.sortOrder)
+    .map((item) => ({
+      id: String(item.id),
+      lectureId: String(item.lectureId),
+      parentId: item.parentId ? String(item.parentId) : null,
+      title: item.title,
+      sortOrder: item.sortOrder,
+      content: item.content
+        ? {
+            id: String(item.content.id),
+            lectureId: String(item.content.lectureId),
+            outlineItemId: String(item.content.outlineItemId),
+            content: item.content.content,
+            status: item.content.status,
+            updatedAt: item.content.updatedAt,
+          }
+        : null,
+    }));
+}
 
-  return sortedItems
+function toOutline(items: AdminLectureOutlineItem[]): OutlineItem[] {
+  return items
     .filter((item) => !item.parentId)
     .map((item) => ({
       title: item.title,
-      children: sortedItems
+      children: items
         .filter((child) => child.parentId === item.id)
         .map((child) => child.title),
     }));
@@ -189,7 +258,3 @@ function formatDate(value: string | null) {
     year: "numeric",
   }).format(date);
 }
-
-
-
-

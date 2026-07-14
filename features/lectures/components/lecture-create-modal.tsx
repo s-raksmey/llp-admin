@@ -1,6 +1,8 @@
 import { OutlineBuilder } from "@/components/ui/outline-builder";
+import type { Category } from "@/features/categories/types";
 
 type LectureCreateModalProps = {
+  categories: Category[];
   draftOutline: string;
   onClose: () => void;
   onCreate: (formData: FormData) => void;
@@ -8,6 +10,7 @@ type LectureCreateModalProps = {
 };
 
 export function LectureCreateModal({
+  categories,
   draftOutline,
   onClose,
   onCreate,
@@ -56,9 +59,12 @@ export function LectureCreateModal({
                   className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
                   name="categoryId"
                 >
-                  <option value="1">Web Development</option>
-                  <option value="2">GraphQL</option>
-                  <option value="3">Web Developer</option>
+                  <option value="">Uncategorized</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -98,3 +104,5 @@ export function LectureCreateModal({
     </div>
   );
 }
+
+
