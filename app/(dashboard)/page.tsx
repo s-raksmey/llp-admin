@@ -2,37 +2,37 @@ import { dashboardStats, recentActivities } from "@/features/dashboard/data";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section className="admin-fade-up">
-        <p className="text-sm font-semibold text-blue-600">Overview</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-normal text-foreground">
+        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-blue-600">Overview</p>
+        <h1 className="mt-1.5 text-2xl font-semibold tracking-normal text-foreground">
           Lecture Learning Platform
         </h1>
       </section>
 
-      <section className="admin-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="admin-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {dashboardStats.map((stat) => (
-          <article className="admin-panel p-5" key={stat.label}>
-            <p className="text-sm text-[var(--muted)]">{stat.label}</p>
-            <p className="mt-3 text-3xl font-semibold text-foreground">
+          <article className="admin-panel p-4" key={stat.label}>
+            <p className="text-xs text-[var(--muted)]">{stat.label}</p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
               {stat.value}
             </p>
           </article>
         ))}
       </section>
 
-      <section className="admin-panel admin-scale-in p-6">
-        <h2 className="text-lg font-semibold text-foreground">
+      <section className="admin-panel admin-scale-in p-4 sm:p-5">
+        <h2 className="text-base font-semibold text-foreground">
           Recent Activities
         </h2>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Content and account changes will appear here.
         </p>
 
-        <div className="mt-6 divide-y divide-[var(--border)]">
+        <div className="mt-4 divide-y divide-[var(--border)]">
           {recentActivities.map((activity) => (
             <div
-              className="flex items-center justify-between gap-4 py-4"
+              className="flex items-center justify-between gap-3 py-3"
               key={activity.id}
             >
               <div>

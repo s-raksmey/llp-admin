@@ -11,11 +11,11 @@ export function SectionHeader({
 }: Readonly<SectionHeaderProps>) {
   return (
     <section className="admin-fade-up">
-      <p className="text-sm font-semibold text-blue-600">{eyebrow}</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-normal text-foreground">
+      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-blue-600">{eyebrow}</p>
+      <h1 className="mt-1.5 text-2xl font-semibold tracking-normal text-foreground">
         {title}
       </h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+      <p className="mt-1.5 max-w-2xl text-[13px] leading-5 text-[var(--muted)]">
         {description}
       </p>
     </section>

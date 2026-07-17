@@ -9,7 +9,7 @@
   --border: #dde1e8;
   --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --shadow: 0 20px 60px rgb(17 24 39 / 0.08);
+  --shadow: 0 10px 30px rgb(17 24 39 / 0.06);
 }
 
 html[data-theme="dark"] {
@@ -60,6 +60,80 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+body,
+main {
+  min-width: 0;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.admin-menu-button,
+.admin-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.admin-menu-button {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-menu-button span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.admin-drawer-close {
+  font-size: 22px;
+}
+
+.admin-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: 0;
+  background: rgb(0 0 0 / 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.admin-mobile-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.admin-mobile-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+  width: min(80vw, 264px);
+  overflow-y: auto;
+  background: var(--panel);
+  box-shadow: 24px 0 60px rgb(0 0 0 / 0.2);
+  transform: translateX(-105%);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-mobile-drawer.is-open {
+  transform: translateX(0);
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -77,8 +151,8 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  width: 66px;
-  height: 34px;
+  width: 58px;
+  height: 30px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: linear-gradient(180deg, var(--panel), var(--panel-strong));
@@ -103,8 +177,8 @@ textarea {
   position: absolute;
   left: 4px;
   z-index: 0;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   background: #ffffff;
   box-shadow:
@@ -121,8 +195,8 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   transition:
     color 160ms ease,
@@ -147,7 +221,7 @@ html[data-theme="dark"] .theme-toggle {
 }
 
 html[data-theme="dark"] .theme-toggle-thumb {
-  transform: translateX(32px);
+  transform: translateX(28px);
   background: #232936;
   box-shadow:
     0 6px 14px rgb(0 0 0 / 0.34),
@@ -249,7 +323,7 @@ html[data-theme="dark"] .theme-icon-sun {
 
 .admin-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--panel);
   box-shadow: var(--shadow);
   transition:
@@ -336,6 +410,88 @@ html[data-theme="dark"] .theme-icon-sun {
   animation: fade-slide-up 460ms 120ms ease both;
 }
 
+.theme-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.responsive-table th,
+.responsive-table td {
+  padding: 12px 16px;
+}
+
+@media (max-width: 767px) {
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .responsive-table tbody {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .responsive-table tbody tr {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+
+  .responsive-table td {
+    display: grid;
+    grid-template-columns: minmax(88px, 0.38fr) minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .responsive-table td:last-child > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .admin-tiptap-editor {
+    min-height: 300px;
+  }
+
+  .admin-tiptap-editor h1 {
+    font-size: 32px;
+  }
+
+  .admin-tiptap-editor h2 {
+    font-size: 24px;
+  }
+
+  .admin-tiptap-editor p,
+  .admin-tiptap-editor li {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+}
+
 .admin-tiptap-editor h1 {
   margin: 0 0 28px;
   color: var(--foreground);
@@ -415,6 +571,26 @@ html[data-theme="dark"] .theme-icon-sun {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-tiptap-editor {
+    min-height: 300px;
+  }
+
+  .admin-tiptap-editor h1 {
+    font-size: 32px;
+  }
+
+  .admin-tiptap-editor h2 {
+    font-size: 24px;
+  }
+
+  .admin-tiptap-editor p,
+  .admin-tiptap-editor li {
+    font-size: 16px;
+    line-height: 1.7;
   }
 }
 

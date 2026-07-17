@@ -202,7 +202,7 @@ export function LectureEditorWorkspace({
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="admin-slide-down flex min-h-16 flex-col gap-4 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_92%,transparent)] px-5 py-4 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 lg:w-auto">
           <Link
             className="admin-interactive text-sm font-semibold text-[var(--muted)] hover:text-foreground"
             href="/lectures"
@@ -234,7 +234,7 @@ export function LectureEditorWorkspace({
 
           {isPublished ? (
             <button
-              className="admin-interactive h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="admin-interactive h-10 flex-1 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
               disabled={isSaving}
               onClick={() => updateLectureStatus("DRAFT")}
               type="button"
@@ -244,7 +244,7 @@ export function LectureEditorWorkspace({
           ) : (
             <>
               <button
-                className="admin-interactive h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="admin-interactive h-10 flex-1 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-foreground hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
                 disabled={isSaving || !selectedSection}
                 onClick={saveSection}
                 type="button"
@@ -252,7 +252,7 @@ export function LectureEditorWorkspace({
                 Save Draft
               </button>
               <button
-                className="admin-interactive h-10 rounded-lg bg-foreground px-5 text-sm font-bold text-background hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60"
+                className="admin-interactive h-10 flex-1 rounded-lg bg-foreground px-5 text-sm font-bold text-background hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
                 disabled={isSaving}
                 onClick={() => updateLectureStatus("PUBLISHED")}
                 type="button"
@@ -345,7 +345,7 @@ export function LectureEditorWorkspace({
             />
           </div>
 
-          <article className="admin-fade-up mx-auto w-full max-w-4xl px-6 py-12 md:px-12 md:py-16 [animation-delay:90ms]">
+          <article className="admin-fade-up mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16 [animation-delay:90ms]">
             {isPublished ? (
               <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
                 This lecture is published. Unpublish it before editing content.
@@ -368,7 +368,7 @@ export function LectureEditorWorkspace({
           </article>
         </div>
 
-        <aside className="admin-fade-right min-w-0 bg-[var(--panel)] px-6 py-8 xl:px-8">
+        <aside className="admin-fade-right min-w-0 bg-[var(--panel)] px-4 py-6 sm:px-6 sm:py-8 xl:px-8">
           <section>
             <h2 className="text-sm font-bold text-foreground">
               Content JSON Schema Output

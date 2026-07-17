@@ -17,12 +17,12 @@ export function LectureCreateModal({
   onDraftOutlineChange,
 }: Readonly<LectureCreateModalProps>) {
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <form
         action={onCreate}
-        className="admin-panel admin-scale-in flex max-h-[calc(100dvh-2rem)] w-full max-w-6xl flex-col overflow-hidden"
+        className="admin-panel admin-scale-in flex max-h-[100dvh] w-full max-w-6xl flex-col overflow-hidden rounded-b-none sm:max-h-[calc(100dvh-2rem)] sm:rounded-[10px]"
       >
-        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[var(--border)] px-6 py-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[var(--border)] px-4 py-4 sm:px-6 sm:py-5">
           <div>
             <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
               Append new record
@@ -40,13 +40,13 @@ export function LectureCreateModal({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
                 Module title
                 <input
-                  className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
+                  className="h-10 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-[13px] font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
                   name="title"
                   placeholder="Module title"
                   required
@@ -56,7 +56,7 @@ export function LectureCreateModal({
               <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
                 Category domain
                 <select
-                  className="h-11 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
+                  className="h-10 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-[13px] font-medium normal-case tracking-normal text-foreground outline-none focus:border-blue-500"
                   name="categoryId"
                 >
                   <option value="">Uncategorized</option>
@@ -85,7 +85,7 @@ export function LectureCreateModal({
           </div>
         </div>
 
-        <div className="flex shrink-0 justify-end gap-2 border-t border-[var(--border)] bg-[var(--panel)] px-6 py-4">
+        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-[var(--border)] bg-[var(--panel)] px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
           <button
             className="admin-interactive rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--muted)] hover:bg-[var(--panel-strong)]"
             onClick={onClose}

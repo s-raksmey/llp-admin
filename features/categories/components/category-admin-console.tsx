@@ -280,7 +280,7 @@ export function CategoryAdminConsole({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <CategoryMetrics
         activeCount={activeCount}
         archivedCount={archivedCount}

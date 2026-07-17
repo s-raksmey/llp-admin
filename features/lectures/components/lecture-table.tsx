@@ -25,11 +25,11 @@ export function LectureTable({
   return (
     <section>
       <div className="admin-panel admin-scale-in overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--border)] p-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-end sm:justify-between">
           <label className="grid gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
             Search catalog
             <input
-              className="h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none transition focus:border-blue-500 sm:w-80"
+              className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-[13px] font-medium normal-case tracking-normal text-foreground outline-none transition focus:border-blue-500 sm:w-72"
               onChange={(event) => onQueryChange(event.target.value)}
               placeholder="Title, category, status..."
               value={query}
@@ -46,7 +46,7 @@ export function LectureTable({
         </div>
 
         <div>
-          <table className="w-full table-fixed border-collapse text-left text-sm">
+          <table className="responsive-table w-full table-fixed border-collapse text-left text-sm">
             <thead className="border-b border-[var(--border)] bg-[var(--panel-strong)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
               <tr>
                 <th className="px-5 py-4">Index Key</th>
@@ -63,10 +63,10 @@ export function LectureTable({
                   key={lecture.id}
                   style={{ animationDelay: `${140 + index * 55}ms` }}
                 >
-                  <td className="px-5 py-4 font-mono text-xs text-[var(--muted)]">
+                  <td data-label="Index key" className="px-5 py-4 font-mono text-xs text-[var(--muted)]">
                     {lecture.id}
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Module title" className="px-5 py-4">
                     <Link
                       className="admin-interactive inline-block text-left font-semibold text-foreground hover:text-blue-600"
                       href={`/lectures/${encodeURIComponent(lecture.slug)}`}
@@ -77,19 +77,19 @@ export function LectureTable({
                       Updated {lecture.updatedAt}
                     </p>
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Category" className="px-5 py-4">
                     <span className="rounded-md bg-[var(--panel-strong)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
                       {lecture.category}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Status" className="px-5 py-4">
                     <span
                       className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-bold ${lectureStatusStyles[lecture.status]}`}
                     >
                       {lectureStatusLabels[lecture.status]}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-right">
+                  <td data-label="Actions" className="px-5 py-4 text-right">
                     <div className="inline-flex items-center gap-3">
                       <Link
                         className="admin-interactive inline-block font-bold text-blue-600 hover:text-blue-700"
