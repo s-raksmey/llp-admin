@@ -81,6 +81,16 @@ type CreateLectureMutation = {
   createLecture: ApiLecture;
 };
 
+export type DeleteLectureResult = {
+  id: string;
+  success: boolean;
+  message: string;
+};
+
+type DeleteLectureMutation = {
+  deleteLecture: DeleteLectureResult;
+};
+
 export const adminLectures: AdminLecture[] = [];
 
 const adminLectureListFields = `
@@ -156,6 +166,25 @@ export async function createAdminLecture(
   );
 
   return toAdminLecture(data.createLecture);
+}
+
+export async function deleteAdminLecture(
+  id: string,
+): Promise<DeleteLectureResult> {
+  const data = await graphqlRequest<DeleteLectureMutation>(
+    `
+      mutation DeleteLecture($id: ID!) {
+        deleteLecture(id: $id) {
+          id
+          success
+          message
+        }
+      }
+    `,
+    { id },
+  );
+
+  return data.deleteLecture;
 }
 
 function toAdminLecture(lecture: ApiLecture): AdminLecture {

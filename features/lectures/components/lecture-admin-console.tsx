@@ -21,6 +21,12 @@ type CreateLectureResponse = {
   error?: string;
 };
 
+type DeleteLectureResponse = {
+  id: string;
+  success: boolean;
+  message: string;
+};
+
 export function LectureAdminConsole({
   initialCategories,
   initialLectures,
@@ -29,6 +35,9 @@ export function LectureAdminConsole({
   const [query, setQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [draftOutline, setDraftOutline] = useState(emptyLessonOutline);
+  const [deletingLectureId, setDeletingLectureId] = useState<string | null>(
+    null,
+  );
 
   const filteredLectures = useMemo(
     () => filterLectures(lectures, query),
@@ -84,8 +93,35 @@ export function LectureAdminConsole({
     setIsCreating(false);
   }
 
-  function removeLecture(id: string) {
-    setLectures((current) => current.filter((lecture) => lecture.id !== id));
+  async function removeLecture(id: string) {
+    const lecture = lectures.find((item) => item.id === id);
+
+    if (
+      !lecture ||
+      !window.confirm(`Delete “${lecture.title}”? This cannot be undone.`)
+    ) {
+      return;
+    }
+
+    setDeletingLectureId(id);
+
+    try {
+      const response = await fetch(`/api/lectures/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      const result = (await response.json()) as DeleteLectureResponse;
+
+      if (!response.ok || !result.success) {
+        window.alert(result.message || "Failed to delete lecture.");
+        return;
+      }
+
+      setLectures((current) => current.filter((item) => item.id !== id));
+    } catch {
+      window.alert("Failed to delete lecture.");
+    } finally {
+      setDeletingLectureId(null);
+    }
   }
 
   return (
@@ -94,6 +130,7 @@ export function LectureAdminConsole({
 
       <LectureTable
         lectures={filteredLectures}
+        deletingLectureId={deletingLectureId}
         query={query}
         onCreate={openCreateModal}
         onDelete={removeLecture}

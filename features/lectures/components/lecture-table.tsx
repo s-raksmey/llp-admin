@@ -7,6 +7,7 @@ import {
 
 type LectureTableProps = {
   lectures: AdminLecture[];
+  deletingLectureId: string | null;
   query: string;
   onCreate: () => void;
   onDelete: (lectureId: string) => void;
@@ -15,6 +16,7 @@ type LectureTableProps = {
 
 export function LectureTable({
   lectures,
+  deletingLectureId,
   query,
   onCreate,
   onDelete,
@@ -96,11 +98,14 @@ export function LectureTable({
                         Configure
                       </Link>
                       <button
-                        className="admin-interactive font-semibold text-[var(--muted)] hover:text-red-600"
+                        className="admin-interactive font-semibold text-[var(--muted)] hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={deletingLectureId !== null}
                         onClick={() => onDelete(lecture.id)}
                         type="button"
                       >
-                        Delete
+                        {deletingLectureId === lecture.id
+                          ? "Deleting…"
+                          : "Delete"}
                       </button>
                     </div>
                   </td>
